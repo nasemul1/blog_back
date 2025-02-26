@@ -1,0 +1,20 @@
+{
+  "name": "blog_back",
+  "version": "1.0.0",
+  "description": "a restful blog project backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "server": "nodemon index.js"
+  },
+  "author": "nasemul",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.2",
+    "nodemon": "^3.1.9"
+  }
+}
