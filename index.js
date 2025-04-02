@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+import morgan from 'morgan'
 import 'dotenv/config'
 import connectDB from './config/mongodb.js'
 import userRouter from './routes/userRouter.js'
@@ -14,7 +15,9 @@ connectDB()
 
 // third party middleware
 app.use(cors())
-app.use(bodyParser.json({ limit: '100mb' }))
+app.use(express.json({ limit: '500mb' }))
+app.use(bodyParser.json({ limit: '500mb', extended: true }))
+app.use(morgan('dev'))
 
 // routes
 app.get('/', (req, res)=>{
