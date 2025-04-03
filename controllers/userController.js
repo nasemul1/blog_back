@@ -1,6 +1,8 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { hashPassword, verifyPassword } from "../utils/password_encrypt.js";
+import generateOTP from "../utils/generateOTP.js";
+import semdEmail from "../utils/sendEmail.js";
 
 const signup = async (req, res, next)=>{
     try {
@@ -66,4 +68,69 @@ const signin = async (req, res, next) => {
     }
 }
 
-export { signup, signin };
+const sendVerificationCode = async (req, res, next) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ code: 400, status: false, message: "Please provide email" });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        // Generate verification code and send it to the user's email
+        const code = generateOTP();
+
+        user.verificationCode = code;
+        await user.save();
+
+        // Send the verification code to the user's email
+        const subject = "Verification Code";
+        const content = "verify your email";
+        const emailTo = email;
+        await semdEmail({ emailTo, subject, code, content });
+
+        res.status(200).json({ code: 200, status: true, message: "Verification code sent successfully" });
+
+    } catch (error) {
+        res.json({ code: 500, status: false, message: "Internal server error" });
+    }
+}
+
+// user verification function
+const verifyUser = async (req, res, next) => {
+    const { email, code } = req.body;
+    
+    if (!email || !code) {
+        return res.status(400).json({ code: 400, status: false, message: "Please provide email and code" });
+    }
+
+    try {
+        
+        const user = await User.findOne({ email});
+
+        if(!user){
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        if(user.verificationCode !== code){
+            return res.status(401).json({ code: 401, status: false, message: "Invalid verification code" });
+        }
+
+        user.isVerified = true;
+        user.verificationCode = null;
+        await user.save();
+
+        res.json({ code: 200, status: true, message: "User verified successfully" });
+
+    } catch (error) {
+        
+        res.json({ code: 500, staus: false, message: "Internal server error." });
+
+    }
+}
+
+export { signup, signin, sendVerificationCode, verifyUser };
