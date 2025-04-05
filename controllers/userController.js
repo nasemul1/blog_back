@@ -133,4 +133,66 @@ const verifyUser = async (req, res, next) => {
     }
 }
 
-export { signup, signin, sendVerificationCode, verifyUser };
+// send forgot password code function
+const sendForgotPasswordCode = async (req, res, next) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ code: 400, status: false, message: "Please provide email" });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        // Generate verification code and send it to the user's email
+        const code = generateOTP();
+
+        user.forgotPasswordCode = code;
+        await user.save();
+
+        // Send the verification code to the user's email
+        const subject = "Verification Code";
+        const content = "verify your email";
+        const emailTo = email;
+        await semdEmail({ emailTo, subject, code, content });
+
+        res.status(200).json({ code: 200, status: true, message: "Verification code sent successfully" });
+
+    } catch (error) {
+        res.json({ code: 500, status: false, message: "Internal server error" });
+    }
+}
+
+// recover password function
+const recoverPassword = async (req, res, next) => {
+
+    const { email, code, password } = req.body;
+
+    try {
+        
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        if( user.forgotPasswordCode !== code ){
+            return res.status(404).json({ code: 400, status: false, message: "Code not matched" });
+        }
+
+        const hashedPassword = await hashPassword(password);
+        user.password = hashedPassword;
+
+        await user.save();
+
+        res.status(200).json({ code: 200, status: true, message: "Password changed successfully" });
+
+    } catch (error) {
+        res.json({code: 500, status: false, message: "Internal server error"});
+    }
+}
+
+export { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword };
