@@ -195,4 +195,35 @@ const recoverPassword = async (req, res, next) => {
     }
 }
 
-export { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword };
+const changePassword = async (req, res, next) => {
+    
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        const match = await verifyPassword(oldPassword, user.password);
+        
+        if(!match){
+            return res.status(401).json({ code: 401, status: false, message: "Old password is incorrect" });
+        }
+        
+        if( oldPassword === newPassword ){
+            return res.status(401).json({ code: 401, status: false, message: "Old password and new password are same." });
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({code: 200, status: true, message: "Change password successfully"});
+    } catch (error) {
+        res.json({code: 500, status: false, message: "Internal server error"});
+    }
+}
+
+export { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword, changePassword };

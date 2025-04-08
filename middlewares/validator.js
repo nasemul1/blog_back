@@ -56,4 +56,28 @@ const recoverPassValidator = ( req, res, next ) => {
     next();
 }
 
-export { validateUser, emailValidate, recoverPassValidator };
+const changePasswordValidator = (req, res, next) => {
+    const { oldPassword, newPassword } = req.body;
+
+    if(!oldPassword){
+        return res.status(400).json({ error: 'Old password is required' });
+    }
+    if(!newPassword){
+        return res.status(400).json({ error: 'New password is required' });
+    }
+
+    if (
+        !newPassword ||
+        !validator.isLength(newPassword, { min: 8 }) ||
+        !/[a-zA-Z]/.test(newPassword) ||
+        !/[0-9]/.test(newPassword)
+    ) {
+        return res.status(400).json({
+            error: 'Password must be at least 8 characters long and contain at least one letter and one number',
+        });
+    }
+
+    next();
+}
+
+export { validateUser, emailValidate, recoverPassValidator, changePasswordValidator };
