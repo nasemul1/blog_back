@@ -226,4 +226,24 @@ const changePassword = async (req, res, next) => {
     }
 }
 
-export { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword, changePassword };
+const updateProfile = async (req, res, next) => {
+    try {
+        const { name, email } = req.body;
+        const userId = req.user.id;
+
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({ code: 404, status: false, message: "User not found" });
+        }
+
+        user.name = name;
+
+        await user.save();
+
+        res.json({code: 200, status: true, message: "Profile updated successfully"});
+    } catch (error) {
+        res.json({code: 500, status: false, message: "Internal server error"});
+    }
+}
+
+export { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword, changePassword, updateProfile };

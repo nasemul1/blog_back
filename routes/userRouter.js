@@ -1,5 +1,5 @@
 import express from 'express'
-import { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword, changePassword } from '../controllers/userController.js'
+import { signup, signin, sendVerificationCode, verifyUser, sendForgotPasswordCode, recoverPassword, changePassword, updateProfile } from '../controllers/userController.js'
 import { validateUser, emailValidate, recoverPassValidator, changePasswordValidator } from '../middlewares/validator.js';
 import auth from '../middlewares/auth.js';
 
@@ -12,5 +12,6 @@ userRouter.post('/verify-user', emailValidate, verifyUser);
 userRouter.post('/send-forgot-password-code', emailValidate, sendForgotPasswordCode);
 userRouter.post('/recover-password', recoverPassValidator, recoverPassword);
 userRouter.put('/change-password', changePasswordValidator, auth, changePassword);
+userRouter.put('/update-profile', auth, updateProfile);
 
 export default userRouter;
